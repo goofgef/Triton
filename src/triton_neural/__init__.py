@@ -630,7 +630,7 @@ def vae_mse_loss(reconstruction, x, mu, logvar, beta=1.0):
 # PACKAGE METADATA
 # ============================================================================
 
-__version__ = "2.0.3"
+__version__ = "2.0.4"
 __all__ = [
     # Modules
     'Module', 'Sequential',

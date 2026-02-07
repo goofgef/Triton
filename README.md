@@ -1,6 +1,6 @@
 # Triton Neural - Unified Deep Learning API
 
-**Version 2.0.3** - Complete neural network framework built on JAX
+**Version 2.0.4** - Complete neural network framework built on JAX
 
 A comprehensive, modular deep learning library featuring state-of-the-art transformer architectures, latent space models, and memory-efficient attention mechanisms.
 
