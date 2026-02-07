@@ -1,8 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-src/triton_neural.egg-info/PKG-INFO
-src/triton_neural.egg-info/SOURCES.txt
-src/triton_neural.egg-info/dependency_links.txt
-src/triton_neural.egg-info/requires.txt
-src/triton_neural.egg-info/top_level.txt
