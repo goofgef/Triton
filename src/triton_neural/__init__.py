@@ -10,6 +10,9 @@ import jax.numpy as jnp
 from jax import random
 from typing import List, Tuple, Optional
 
+# Import base class from core
+from .core import Module
+
 # Import submodules for PyTorch-style access
 from . import train
 from . import util
@@ -35,22 +38,6 @@ from .transformer import (
     PositionalEncoding, LearnedPositionalEmbedding,
     PremadeTransformer, PremadeTransformerDecoder
 )
-
-
-# ============================================================================
-# BASE MODULE
-# ============================================================================
-
-class Module:
-    """Base class for all neural network modules."""
-    
-    def __call__(self, x, params, rng=None, training=False):
-        """Forward pass through the module."""
-        raise NotImplementedError
-    
-    def init(self, rng, input_shape):
-        """Initialize parameters."""
-        raise NotImplementedError
 
 
 # ============================================================================

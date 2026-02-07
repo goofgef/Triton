@@ -12,7 +12,46 @@ from jax import random
 from typing import Optional
 import math
 
-from . import Module, LayerNorm, RMSNorm
+from .core import Module
+
+
+# ============================================================================
+# NORMALIZATION LAYERS
+# ============================================================================
+
+class LayerNorm(Module):
+    """Layer normalization for transformers."""
+    
+    def __init__(self, normalized_shape: int, eps: float = 1e-5):
+        self.normalized_shape = normalized_shape
+        self.eps = eps
+    
+    def init(self, rng, input_shape):
+        return {
+            'gamma': jnp.ones((self.normalized_shape,)),
+            'beta': jnp.zeros((self.normalized_shape,))
+        }
+    
+    def __call__(self, x, params, rng=None, training=False):
+        mean = jnp.mean(x, axis=-1, keepdims=True)
+        var = jnp.var(x, axis=-1, keepdims=True)
+        x_norm = (x - mean) / jnp.sqrt(var + self.eps)
+        return params['gamma'] * x_norm + params['beta']
+
+
+class RMSNorm(Module):
+    """Root Mean Square Layer Normalization (more efficient variant)."""
+    
+    def __init__(self, dim: int, eps: float = 1e-6):
+        self.dim = dim
+        self.eps = eps
+    
+    def init(self, rng, input_shape):
+        return {'gamma': jnp.ones((self.dim,))}
+    
+    def __call__(self, x, params, rng=None, training=False):
+        rms = jnp.sqrt(jnp.mean(x ** 2, axis=-1, keepdims=True) + self.eps)
+        return params['gamma'] * (x / rms)
 
 
 # ============================================================================
