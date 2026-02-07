@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "triton-neural"
+version = "2.0.0"
+authors = [
+  { name = "goofgef", email = "goofgef123why@gmail.com"},
+]
+description = "A comprehensive, modular deep learning library featuring state-of-the-art transformer architectures, latent space models, and memory-efficient attention mechanisms."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "jax>=0.4.0",
+    "jaxlib>=0.4.0",
+    "matplotlib",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/triton-neural"
+
+[tool.setuptools.packages.find]
+where = ["src"]
