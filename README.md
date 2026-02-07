@@ -1,6 +1,6 @@
 # Triton Neural - Unified Deep Learning API
 
-**Version 2.0.4** - Complete neural network framework built on JAX
+**Version 2.0.5** - Complete neural network framework built on JAX
 
 A comprehensive, modular deep learning library featuring state-of-the-art transformer architectures, latent space models, and memory-efficient attention mechanisms.
 
@@ -79,7 +79,13 @@ Both styles work identically - choose what fits your workflow!
 
 ```python
 import triton_neural as tn
-from jax import random
+import numpy as np
+
+# Create sample data (MNIST-like)
+# x_train: flattened 28x28 images, shape (num_samples, 784)
+# y_train: labels 0-9, shape (num_samples,)
+x_train = np.random.randn(1000, 784).astype(np.float32)
+y_train = np.random.randint(0, 10, 1000)
 
 # Create a simple MLP
 model = tn.Sequential(
@@ -90,9 +96,9 @@ model = tn.Sequential(
     tn.Softmax()
 )
 
-# Initialize
-rng = random.PRNGKey(0)
-params = model.init(rng, (784,))
+# Initialize (using built-in rng, no need to import JAX!)
+key = tn.rng.PRNGKey(0)
+params = model.init(key, (784,))
 
 # Train
 optimizer = tn.train.Adam(learning_rate=0.001)
@@ -110,7 +116,6 @@ params, history = tn.train.fit(
 
 ```python
 import triton_neural as tn
-from jax import random
 
 # Memory-efficient transformer for long sequences
 transformer = tn.transformer.PremadeTransformer(
@@ -121,12 +126,12 @@ transformer = tn.transformer.PremadeTransformer(
     max_len=2048
 )
 
-rng = random.PRNGKey(0)
-params = transformer.init(rng, (2048, 768))
+key = tn.rng.PRNGKey(0)
+params = transformer.init(key, (2048, 768))
 
 # Process long sequence
-x = random.normal(rng, (1, 1024, 768))
-output = transformer(x, params, rng, training=False)
+x = tn.rng.normal(key, (1, 1024, 768))
+output = transformer(x, params, key, training=False)
 ```
 
 ### GPT-style Language Model
@@ -144,13 +149,15 @@ gpt = tn.transformer.PremadeTransformer(
     use_learned_pos=False
 )
 
-params = gpt.init(rng, (2048, 768))
+key = tn.rng.PRNGKey(0)
+params = gpt.init(key, (2048, 768))
 ```
 
 ### Variational Autoencoder
 
 ```python
 import triton_neural as tn
+import numpy as np
 
 # VAE for latent space learning
 vae = tn.VAE(
@@ -160,17 +167,21 @@ vae = tn.VAE(
     decoder_hidden=[128, 256]
 )
 
-params = vae.init(rng, (784,))
+key = tn.rng.PRNGKey(0)
+params = vae.init(key, (784,))
+
+# Sample data
+x = np.random.randn(10, 784).astype(np.float32)
 
 # Encode, sample, decode
-reconstruction, mu, logvar = vae(x, params, rng, training=True)
+reconstruction, mu, logvar = vae(x, params, key, training=True)
 
 # Compute VAE loss
 loss = tn.vae_loss(reconstruction, x, mu, logvar, beta=1.0)
 
 # Latent space utilities
 latent_space = tn.LatentSpace(vae)
-latent = latent_space.read(x, params, rng)
+latent = latent_space.read(x, params, key)
 
 # Interpolate in latent space
 z1 = latent['sample'][0]

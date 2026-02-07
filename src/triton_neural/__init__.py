@@ -10,6 +10,38 @@ import jax.numpy as jnp
 from jax import random
 from typing import List, Tuple, Optional
 
+# Export JAX random functionality so users don't need to import JAX
+class RandomWrapper:
+    """Wrapper for JAX random functions to avoid requiring JAX imports."""
+    
+    @staticmethod
+    def PRNGKey(seed):
+        """Create a PRNG key from a seed."""
+        return random.PRNGKey(seed)
+    
+    @staticmethod
+    def split(key, num=2):
+        """Split a PRNG key into multiple keys."""
+        return random.split(key, num)
+    
+    @staticmethod
+    def normal(key, shape):
+        """Generate random normal values."""
+        return random.normal(key, shape)
+    
+    @staticmethod
+    def uniform(key, shape, minval=0.0, maxval=1.0):
+        """Generate random uniform values."""
+        return random.uniform(key, shape, minval=minval, maxval=maxval)
+    
+    @staticmethod
+    def bernoulli(key, p, shape):
+        """Generate random bernoulli values."""
+        return random.bernoulli(key, p, shape)
+
+# Create singleton instance
+rng = RandomWrapper()
+
 # Import base class from core
 from .core import Module
 
@@ -630,8 +662,11 @@ def vae_mse_loss(reconstruction, x, mu, logvar, beta=1.0):
 # PACKAGE METADATA
 # ============================================================================
 
-__version__ = "2.0.4"
+__version__ = "2.0.5"
 __all__ = [
+    # Random utilities
+    'rng',
+    
     # Modules
     'Module', 'Sequential',
     
