@@ -1,65 +1,93 @@
 # Triton Neural - Unified Deep Learning API
 
-**Version 2.0** - Complete neural network framework built on JAX
+**Version 2.0.2** - Complete neural network framework built on JAX
 
 A comprehensive, modular deep learning library featuring state-of-the-art transformer architectures, latent space models, and memory-efficient attention mechanisms.
 
-## To install..
+## Installation
+
+```bash
 pip install triton-neural
+```
+
+## Import Styles
+
+Triton Neural supports two import styles for maximum flexibility:
+
+### Direct Import (Simple)
+```python
+from triton_neural import *
+
+model = Sequential(Linear(784, 128), ReLU())
+optimizer = Adam(learning_rate=0.001)
+```
+
+### PyTorch-Style Import (Organized)
+```python
+import triton_neural as tn
+
+# Core components
+model = tn.Sequential(tn.Linear(784, 128), tn.ReLU())
+
+# Training utilities
+optimizer = tn.train.Adam(learning_rate=0.001)
+params, history = tn.train.fit(model, params, optimizer, ...)
+
+# Utilities
+tn.util.print_model_summary(model, params, (784,))
+tn.util.plot_history(history)
+
+# Transformers
+transformer = tn.transformer.PremadeTransformer(num_layers=6, embed_dim=512)
+```
+
+Both styles work identically - choose what fits your workflow!
+
 ## Features
 
 ### Core Components
--   **Basic Layers**: Linear, Conv2D, BatchNorm, Dropout, Flatten, Reshape
--   **Activations**: ReLU, GELU, Sigmoid, Tanh, Softmax, LeakyReLU
--   **Container**: Sequential for easy model building
+- **Basic Layers**: Linear, Conv2D, BatchNorm, Dropout, Flatten, Reshape
+- **Activations**: ReLU, GELU, Sigmoid, Tanh, Softmax, LeakyReLU
+- **Container**: Sequential for easy model building
 
 ### Advanced Transformers
--   **6 Attention Types**:
+- **6 Attention Types**:
   - `self` - Standard multi-head attention
   - `masked` - Causal attention for GPT-style models
   - `cross` - Encoder-decoder attention
   - `sparse` - O(n√n) for long sequences
   - `flash` - O(n) memory for very long contexts
   - `rope` - Rotary Position Embeddings (modern LLMs)
--   **Normalization**: LayerNorm, RMSNorm
--   **Position Encodings**: Sinusoidal, Learned, RoPE
--   **Complete Models**: PremadeTransformer, PremadeTransformerDecoder
+- **Normalization**: LayerNorm, RMSNorm
+- **Position Encodings**: Sinusoidal, Learned, RoPE
+- **Complete Models**: PremadeTransformer, PremadeTransformerDecoder
 
 ### Latent Spaces
--   **VAE**: Variational Autoencoder
--   **CVAE**: Conditional VAE
--   **Utilities**: Interpolation, attribute vectors, latent manipulation
+- **VAE**: Variational Autoencoder
+- **CVAE**: Conditional VAE
+- **Utilities**: Interpolation, attribute vectors, latent manipulation
 
 ### Training & Optimization
--   **Optimizers**: SGD, Adam, RMSprop
--   **Loss Functions**: MSE, CrossEntropy, VAE losses
--   **Training Loop**: Complete fit() with validation
--   **Utilities**: Model summary, plotting, save/load
+- **Optimizers**: SGD, Adam, RMSprop
+- **Loss Functions**: MSE, CrossEntropy, VAE losses
+- **Training Loop**: Complete fit() with validation
+- **Utilities**: Model summary, plotting, save/load
 
-## Dependences
-
-```bash
-pip install jax jaxlib
-# For GPU support:
-# pip install jax[cuda12]
-```
-
-##   Quick Start
+## Quick Start
 
 ### Basic Neural Network
 
 ```python
-from triton_neural import *
-import jax.numpy as jnp
+import triton_neural as tn
 from jax import random
 
 # Create a simple MLP
-model = Sequential(
-    Linear(784, 256),
-    ReLU(),
-    Dropout(0.2),
-    Linear(256, 10),
-    Softmax()
+model = tn.Sequential(
+    tn.Linear(784, 256),
+    tn.ReLU(),
+    tn.Dropout(0.2),
+    tn.Linear(256, 10),
+    tn.Softmax()
 )
 
 # Initialize
@@ -67,22 +95,25 @@ rng = random.PRNGKey(0)
 params = model.init(rng, (784,))
 
 # Train
-optimizer = Adam(learning_rate=0.001)
+optimizer = tn.train.Adam(learning_rate=0.001)
 optimizer.init(params)
 
-params, history = fit(
+params, history = tn.train.fit(
     model, params, optimizer,
     train_data=(x_train, y_train),
     epochs=10,
-    loss_fn=cross_entropy_loss
+    loss_fn=tn.cross_entropy_loss
 )
 ```
 
 ### Modern Transformer (Flash Attention)
 
 ```python
+import triton_neural as tn
+from jax import random
+
 # Memory-efficient transformer for long sequences
-transformer = PremadeTransformer(
+transformer = tn.transformer.PremadeTransformer(
     num_layers=12,
     embed_dim=768,
     num_heads=12,
@@ -101,8 +132,10 @@ output = transformer(x, params, rng, training=False)
 ### GPT-style Language Model
 
 ```python
+import triton_neural as tn
+
 # Autoregressive decoder with RoPE
-gpt = PremadeTransformer(
+gpt = tn.transformer.PremadeTransformer(
     num_layers=12,
     embed_dim=768,
     num_heads=12,
@@ -117,8 +150,10 @@ params = gpt.init(rng, (2048, 768))
 ### Variational Autoencoder
 
 ```python
+import triton_neural as tn
+
 # VAE for latent space learning
-vae = VAE(
+vae = tn.VAE(
     input_dim=784,
     latent_dim=32,
     encoder_hidden=[256, 128],
@@ -131,10 +166,10 @@ params = vae.init(rng, (784,))
 reconstruction, mu, logvar = vae(x, params, rng, training=True)
 
 # Compute VAE loss
-loss = vae_loss(reconstruction, x, mu, logvar, beta=1.0)
+loss = tn.vae_loss(reconstruction, x, mu, logvar, beta=1.0)
 
 # Latent space utilities
-latent_space = LatentSpace(vae)
+latent_space = tn.LatentSpace(vae)
 latent = latent_space.read(x, params, rng)
 
 # Interpolate in latent space
@@ -152,27 +187,29 @@ interpolated = latent_space.interpolate(z1, z2, steps=10)
 | `self` | O(n²) | O(n²) | Standard, n < 512 |
 | `masked` | O(n²) | O(n²) | GPT-style, autoregressive |
 | `sparse` | O(n√n) | O(n√n) | Long docs, 512-2048 |
-| `flash` | O(n²) | **O(n)**   | Memory-limited, 2048+ |
+| `flash` | O(n²) | **O(n)** | Memory-limited, 2048+ |
 | `rope` | O(n²) | O(n²) | Modern LLMs, no length limit |
 | `cross` | O(n²) | O(n²) | Encoder-decoder |
 
 ### Recommendations
 
 ```python
+import triton_neural as tn
+
 # Sequence < 512 tokens
-transformer = PremadeTransformer(attention_type='self')
+transformer = tn.transformer.PremadeTransformer(attention_type='self')
 
 # GPT-style generation
-gpt = PremadeTransformer(attention_type='masked')
+gpt = tn.transformer.PremadeTransformer(attention_type='masked')
 
 # Long documents (512-2048)
-doc_encoder = PremadeTransformer(attention_type='sparse')
+doc_encoder = tn.transformer.PremadeTransformer(attention_type='sparse')
 
 # Very long sequences (2048+) or limited memory
-efficient_model = PremadeTransformer(attention_type='flash')
+efficient_model = tn.transformer.PremadeTransformer(attention_type='flash')
 
 # Building modern LLM
-llm = PremadeTransformer(attention_type='rope')
+llm = tn.transformer.PremadeTransformer(attention_type='rope')
 ```
 
 ## Architecture Examples
@@ -180,7 +217,9 @@ llm = PremadeTransformer(attention_type='rope')
 ### BERT-style Encoder
 
 ```python
-bert = PremadeTransformer(
+import triton_neural as tn
+
+bert = tn.transformer.PremadeTransformer(
     num_layers=12,
     embed_dim=768,
     num_heads=12,
@@ -194,7 +233,9 @@ bert = PremadeTransformer(
 ### GPT-style Decoder
 
 ```python
-gpt = PremadeTransformer(
+import triton_neural as tn
+
+gpt = tn.transformer.PremadeTransformer(
     num_layers=12,
     embed_dim=768,
     num_heads=12,
@@ -209,15 +250,17 @@ gpt = PremadeTransformer(
 ### Seq2Seq Translation
 
 ```python
+import triton_neural as tn
+
 # Encoder
-encoder = PremadeTransformer(
+encoder = tn.transformer.PremadeTransformer(
     num_layers=6,
     embed_dim=512,
     num_heads=8
 )
 
 # Decoder with cross-attention
-decoder = PremadeTransformerDecoder(
+decoder = tn.transformer.PremadeTransformerDecoder(
     num_layers=6,
     embed_dim=512,
     num_heads=8,
@@ -233,14 +276,57 @@ decoder_out = decoder(target, dec_params, rng,
 ### Long Document Processing
 
 ```python
+import triton_neural as tn
+
 # Efficient sparse attention for 2048 tokens
-long_encoder = PremadeTransformer(
+long_encoder = tn.transformer.PremadeTransformer(
     num_layers=8,
     embed_dim=512,
     num_heads=8,
     max_len=4096,
     attention_type='sparse'  # O(n√n) complexity
 )
+```
+
+## Module Organization
+
+Triton Neural is organized into modules for easy access:
+
+### Core Module (triton_neural)
+Direct access to layers, activations, and basic components:
+```python
+import triton_neural as tn
+
+tn.Linear(784, 128)
+tn.ReLU()
+tn.Sequential(...)
+tn.VAE(...)
+```
+
+### Train Module (triton_neural.train)
+Training utilities, optimizers, and model persistence:
+```python
+tn.train.Adam(learning_rate=0.001)
+tn.train.fit(model, params, optimizer, ...)
+tn.train.save_params(params, 'model.pkl')
+tn.train.load_params('model.pkl')
+```
+
+### Util Module (triton_neural.util)
+Visualization and model inspection:
+```python
+tn.util.print_model_summary(model, params, input_shape)
+tn.util.plot_history(history)
+tn.util.print_attention_guide()
+```
+
+### Transformer Module (triton_neural.transformer)
+All transformer components and attention mechanisms:
+```python
+tn.transformer.PremadeTransformer(...)
+tn.transformer.SelfAttention(...)
+tn.transformer.FlashAttention(...)
+tn.transformer.RoPEAttention(...)
 ```
 
 ## Complete Examples
@@ -266,45 +352,47 @@ See `triton_neural_examples.py` for 13 comprehensive examples:
 ### Core Layers
 
 ```python
-Linear(in_features, out_features)
-Conv2D(in_channels, out_channels, kernel_size=3, stride=1, padding='SAME')
-BatchNorm(num_features, momentum=0.9, eps=1e-5)
-Dropout(rate=0.5)
+import triton_neural as tn
+
+tn.Linear(in_features, out_features)
+tn.Conv2D(in_channels, out_channels, kernel_size=3, stride=1, padding='SAME')
+tn.BatchNorm(num_features, momentum=0.9, eps=1e-5)
+tn.Dropout(rate=0.5)
 ```
 
 ### Activations
 
 ```python
-ReLU()
-GELU()
-Sigmoid()
-Tanh()
-Softmax()
-LeakyReLU(negative_slope=0.01)
+tn.ReLU()
+tn.GELU()
+tn.Sigmoid()
+tn.Tanh()
+tn.Softmax()
+tn.LeakyReLU(negative_slope=0.01)
 ```
 
 ### Attention Mechanisms
 
 ```python
-SelfAttention(embed_dim, num_heads=8, dropout=0.0)
-MaskedSelfAttention(embed_dim, num_heads=8, dropout=0.0)
-CrossAttention(embed_dim, num_heads=8, dropout=0.0)
-SparseAttention(embed_dim, num_heads=8, block_size=64, stride=64)
-FlashAttention(embed_dim, num_heads=8, block_size=64)
-RoPEAttention(embed_dim, num_heads=8, max_len=2048)
+tn.transformer.SelfAttention(embed_dim, num_heads=8, dropout=0.0)
+tn.transformer.MaskedSelfAttention(embed_dim, num_heads=8, dropout=0.0)
+tn.transformer.CrossAttention(embed_dim, num_heads=8, dropout=0.0)
+tn.transformer.SparseAttention(embed_dim, num_heads=8, block_size=64, stride=64)
+tn.transformer.FlashAttention(embed_dim, num_heads=8, block_size=64)
+tn.transformer.RoPEAttention(embed_dim, num_heads=8, max_len=2048)
 ```
 
 ### Complete Models
 
 ```python
-PremadeTransformer(
+tn.transformer.PremadeTransformer(
     num_layers, embed_dim, num_heads=8,
     ff_dim=None, max_len=512, dropout=0.1,
     attention_type='self',  # 'self', 'masked', 'sparse', 'flash', 'rope'
     use_learned_pos=False
 )
 
-PremadeTransformerDecoder(
+tn.transformer.PremadeTransformerDecoder(
     num_layers, embed_dim, num_heads=8,
     ff_dim=None, max_len=512, dropout=0.1,
     use_cross_attention=True,
@@ -315,86 +403,90 @@ PremadeTransformerDecoder(
 ### Latent Space Models
 
 ```python
-VAE(input_dim, latent_dim, encoder_hidden=None, decoder_hidden=None)
-ConditionalVAE(input_dim, latent_dim, num_classes, ...)
-LatentSpace(vae)  # Utility class for manipulation
+tn.VAE(input_dim, latent_dim, encoder_hidden=None, decoder_hidden=None)
+tn.ConditionalVAE(input_dim, latent_dim, num_classes, ...)
+tn.LatentSpace(vae)  # Utility class for manipulation
 ```
 
 ### Optimizers
 
 ```python
-SGD(learning_rate=0.01, momentum=0.0)
-Adam(learning_rate=0.001, beta1=0.9, beta2=0.999)
-RMSprop(learning_rate=0.01, decay=0.9)
+tn.train.SGD(learning_rate=0.01, momentum=0.0)
+tn.train.Adam(learning_rate=0.001, beta1=0.9, beta2=0.999)
+tn.train.RMSprop(learning_rate=0.01, decay=0.9)
 ```
 
 ### Loss Functions
 
 ```python
-mse_loss(predictions, targets)
-cross_entropy_loss(logits, labels)
-binary_cross_entropy_loss(predictions, targets)
-vae_loss(reconstruction, x, mu, logvar, beta=1.0)
-vae_mse_loss(reconstruction, x, mu, logvar, beta=1.0)
+tn.mse_loss(predictions, targets)
+tn.cross_entropy_loss(logits, labels)
+tn.binary_cross_entropy_loss(predictions, targets)
+tn.vae_loss(reconstruction, x, mu, logvar, beta=1.0)
+tn.vae_mse_loss(reconstruction, x, mu, logvar, beta=1.0)
 ```
 
 ### Training
 
 ```python
-fit(model, params, optimizer, train_data, epochs, loss_fn,
-    val_data=None, batch_size=32, rng=None, verbose=True)
+tn.train.fit(model, params, optimizer, train_data, epochs, loss_fn,
+             val_data=None, batch_size=32, rng=None, verbose=True)
 
-train_step(model, params, optimizer, x, y, loss_fn, rng=None)
-eval_step(model, params, x, y, loss_fn)
+tn.train.train_step(model, params, optimizer, x, y, loss_fn, rng=None)
+tn.train.eval_step(model, params, x, y, loss_fn)
 ```
 
 ### Utilities
 
 ```python
-accuracy(predictions, targets)
-plot_history(history, metric='loss')
-print_model_summary(model, params, input_shape)
-save_params(params, filepath)
-load_params(filepath)
+tn.train.accuracy(predictions, targets)
+tn.util.plot_history(history, metric='loss')
+tn.util.print_model_summary(model, params, input_shape)
+tn.train.save_params(params, filepath)
+tn.train.load_params(filepath)
 ```
 
 ## Key Benefits
 
-### Modularity      
+### Modularity
 - Small, composable functions
 - Mix and match any components
 - Clear, explicit data flow
+- PyTorch-style module organization
 
-### Performance 
+### Performance
 - Built on JAX (JIT compilation, GPU support)
 - O(n) memory with Flash Attention
 - Efficient sparse attention for long sequences
 
-### Modern Features  
-- 6 attention types 
+### Modern Features
+- 6 attention types
 - RoPE for state-of-the-art position encoding
 - Flash Attention for memory efficiency
 - Complete VAE support with utilities
 
-### Educational 
+### Educational
 - Clean, readable code
 - Comprehensive examples
 - Well-documented API
+- Two import styles for flexibility
 
-##  Advanced Topics
+## Advanced Topics
 
 ### Memory Optimization
 
 ```python
+import triton_neural as tn
+
 # Use Flash Attention for long sequences
-model = PremadeTransformer(
+model = tn.transformer.PremadeTransformer(
     attention_type='flash',  # O(n) memory
     max_len=2048
 )
 
 # Use sparse attention for efficiency
-model = PremadeTransformer(
-    attention_type='sparse',  # O(n√n) 
+model = tn.transformer.PremadeTransformer(
+    attention_type='sparse',  # O(n√n)
     max_len=2048
 )
 ```
@@ -402,7 +494,9 @@ model = PremadeTransformer(
 ### Latent Space Arithmetic
 
 ```python
-latent_space = LatentSpace(vae)
+import triton_neural as tn
+
+latent_space = tn.LatentSpace(vae)
 
 # Interpolate between points
 z_interp = latent_space.interpolate(z1, z2, steps=10)
@@ -420,17 +514,19 @@ z_smiling = latent_space.apply_attribute(z, smile_vec, strength=2.0)
 ### Hybrid Models
 
 ```python
+import triton_neural as tn
+
 # Combine different attention types
 class HybridModel:
     def __init__(self):
         # Early layers: Flash (memory efficient)
-        self.flash_layers = PremadeTransformer(
+        self.flash_layers = tn.transformer.PremadeTransformer(
             num_layers=6,
             attention_type='flash'
         )
         
         # Later layers: RoPE (better positions)
-        self.rope_layers = PremadeTransformer(
+        self.rope_layers = tn.transformer.PremadeTransformer(
             num_layers=6,
             attention_type='rope'
         )
@@ -441,7 +537,7 @@ class HybridModel:
         return x
 ```
 
-##  Performance Characteristics
+## Performance Characteristics
 
 | Component | Time | Space | Notes |
 |-----------|------|-------|-------|
@@ -449,11 +545,11 @@ class HybridModel:
 | Conv2D | O(n·k²·c) | O(n·c) | k=kernel, c=channels |
 | SelfAttention | O(n²d) | O(n²) | Standard |
 | SparseAttention | O(n√n·d) | O(n√n) | Efficient |
-| FlashAttention | O(n²d) | **O(n)**   | Memory-efficient |
+| FlashAttention | O(n²d) | **O(n)** | Memory-efficient |
 | RoPEAttention | O(n²d) | O(n²) | Modern LLMs |
 | Full Transformer | O(L·n²d) | O(L·n²) | L=layers |
 
-##  Development
+## Development
 
 ### Requirements
 
@@ -465,9 +561,10 @@ class HybridModel:
 
 ```
 triton_neural/
-├── triton_neural.py            # Main API (unified)
-├── triton_neural_examples.py   # 13 comprehensive examples
-└── README.md                    # This file
+├── __init__.py          # Core layers, activations, VAE
+├── train.py             # Optimizers, training loops
+├── util.py              # Visualization, utilities
+└── transformer.py       # Attention mechanisms, transformers
 ```
 
 ## Citation
@@ -479,7 +576,7 @@ If you use Triton Neural in your research, please cite:
   title={Triton Neural: Unified Deep Learning API},
   author={Built with JAX},
   year={2026},
-  version={2.0}
+  version={2.0.2}
 }
 ```
 
@@ -498,15 +595,17 @@ MIT License - Free to use in research and production.
 - Flash Attention algorithm from Dao et al.
 - RoPE from Su et al. (used in LLaMA, PaLM)
 
-##   What Makes Triton Neural Special
+## What Makes Triton Neural Special
 
 1. **True Modularity** - Every component is independent
-2. **6 Attention Types** - With more coming soon!
-3. **Memory-Efficient** - Flash Attention with O(n) memory
-4. **Modern LLM Support** - RoPE, modern architectures
-5. **Complete VAE Suite** - With latent space utilities
-6. **Educational** - Clean, readable, well-documented
-7. **Production-Ready** - Full training pipelines, save/load
+2. **PyTorch-Style Organization** - `tn.train.Adam`, `tn.util.plot_history`, etc.
+3. **6 Attention Types** - More than most frameworks
+4. **Memory-Efficient** - Flash Attention with O(n) memory
+5. **Modern LLM Support** - RoPE, modern architectures
+6. **Complete VAE Suite** - With latent space utilities
+7. **Educational** - Clean, readable, well-documented
+8. **Production-Ready** - Full training pipelines, save/load
+9. **Flexible** - Two import styles to match your preference
 
 ## Learn More
 
@@ -517,6 +616,6 @@ MIT License - Free to use in research and production.
 
 ---
 
-**Happy Deep Learning with Triton Neural!  **
+**Happy Deep Learning with Triton Neural!**
 
 *A complete, modular deep learning framework for modern neural networks.*

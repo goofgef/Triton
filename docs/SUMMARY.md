@@ -9,7 +9,36 @@ A complete, production-ready deep learning framework that merges:
 - **Latent space models** (VAE, CVAE with utilities)
 - **Training infrastructure** (optimizers, losses, fit loop)
 
-All in a single, clean API built on JAX.
+All in a single, clean API built on JAX with PyTorch-style module organization.
+
+## Import Styles
+
+**New in v2.0.2**: PyTorch-style imports!
+
+```python
+# Style 1: Direct (simple)
+from triton_neural import *
+model = Sequential(Linear(784, 128), ReLU())
+optimizer = Adam(learning_rate=0.001)
+
+# Style 2: PyTorch-style (organized)
+import triton_neural as tn
+model = tn.Sequential(tn.Linear(784, 128), tn.ReLU())
+optimizer = tn.train.Adam(learning_rate=0.001)
+tn.util.plot_history(history)
+```
+
+Both styles work identically - choose what fits your workflow!
+
+## Module Organization
+
+```
+triton_neural/
+├── Core (tn.Linear, tn.ReLU, tn.VAE, etc.)
+├── tn.train (optimizers, fit, save/load)
+├── tn.util (plotting, summaries, guides)
+└── tn.transformer (all attention types)
+```
 
 ## Key Features
 
@@ -29,40 +58,18 @@ All in a single, clean API built on JAX.
 1. **Flash Attention**: O(n) memory instead of O(n²) - enables 2048+ token sequences
 2. **RoPE**: Rotary Position Embeddings used in LLaMA, PaLM - no length limitation
 3. **Complete VAE Suite**: With latent space manipulation utilities
-4. **Fully Modular**: Mix and match any components
-5. **Production-Ready**: Complete training loops, save/load, utilities
-
-## Files Included
-
-1. **`triton_neural.py`** (59KB)
-   - Main unified API
-   - All layers, attentions, transformers, VAE
-   - ~2000 lines of clean, documented code
-
-2. **`triton_neural_examples.py`** (17KB)
-   - 13 comprehensive examples
-   - Covers all functionality
-   - From basic MLP to hybrid transformers
-
-3. **`README.md`** (12KB)
-   - Complete documentation
-   - API reference
-   - Usage guides
-   - Architecture examples
-
-4. **`QUICK_START.md`** (3KB)
-   - Quick reference
-   - Common patterns
-   - Cheat sheet
+4. **PyTorch-Style Organization**: `tn.train.Adam`, `tn.util.plot_history`, etc.
+5. **Fully Modular**: Mix and match any components
+6. **Production-Ready**: Complete training loops, save/load, utilities
 
 ## Usage Examples
 
 ### 1. Memory-Efficient Transformer
 ```python
-from triton_neural import *
+import triton_neural as tn
 
 # Flash Attention: O(n) memory!
-model = PremadeTransformer(
+model = tn.transformer.PremadeTransformer(
     num_layers=12,
     embed_dim=768,
     num_heads=12,
@@ -75,8 +82,10 @@ model = PremadeTransformer(
 
 ### 2. Modern LLM with RoPE
 ```python
+import triton_neural as tn
+
 # Rotary Position Embeddings (like LLaMA)
-gpt = PremadeTransformer(
+gpt = tn.transformer.PremadeTransformer(
     num_layers=12,
     embed_dim=768,
     num_heads=12,
@@ -89,68 +98,72 @@ gpt = PremadeTransformer(
 
 ### 3. VAE with Latent Space
 ```python
+import triton_neural as tn
+
 # Variational Autoencoder
-vae = VAE(input_dim=784, latent_dim=32)
+vae = tn.VAE(input_dim=784, latent_dim=32)
 params = vae.init(rng, (784,))
 
 # Encode to latent space
 reconstruction, mu, logvar = vae(x, params, rng, training=True)
 
 # Latent space utilities
-latent_space = LatentSpace(vae)
+latent_space = tn.LatentSpace(vae)
 z_interp = latent_space.interpolate(z1, z2, steps=10)
 ```
 
 ### 4. Complete Training Pipeline
 ```python
-model = Sequential(
-    Linear(784, 256), ReLU(),
-    Dropout(0.2),
-    Linear(256, 10)
+import triton_neural as tn
+
+model = tn.Sequential(
+    tn.Linear(784, 256), tn.ReLU(),
+    tn.Dropout(0.2),
+    tn.Linear(256, 10)
 )
 
 params = model.init(rng, (784,))
-optimizer = Adam(learning_rate=0.001)
+optimizer = tn.train.Adam(learning_rate=0.001)
 optimizer.init(params)
 
-params, history = fit(
+params, history = tn.train.fit(
     model, params, optimizer,
     train_data=(x_train, y_train),
     val_data=(x_val, y_val),
     epochs=10,
-    loss_fn=cross_entropy_loss
+    loss_fn=tn.cross_entropy_loss
 )
 
-plot_history(history)
+tn.util.plot_history(history)
 ```
 
 ## What's Supported
 
 ### Neural Network Tasks
-  Image classification (CNN)
-  Text classification (Transformer)
-  Language modeling (GPT-style)
-  Machine translation (Seq2Seq)
-  Long document processing (Sparse/Flash)
-  Representation learning (VAE)
-  Conditional generation (CVAE)
+- Image classification (CNN)
+- Text classification (Transformer)
+- Language modeling (GPT-style)
+- Machine translation (Seq2Seq)
+- Long document processing (Sparse/Flash)
+- Representation learning (VAE)
+- Conditional generation (CVAE)
 
 ### Technical Capabilities
-  Multi-head attention (all 6 types)
-  Causal masking (autoregressive)
-  Cross-attention (encoder-decoder)
-  Position encodings (3 types)
-  Layer normalization (2 types)
-  Dropout & regularization
-  Batch normalization
-  Convolutional layers
-  Fully connected layers
-  Various activations
-  Multiple optimizers
-  Different loss functions
-  Training & validation loops
-  Model save/load
-  ASCII plotting
+- Multi-head attention (all 6 types)
+- Causal masking (autoregressive)
+- Cross-attention (encoder-decoder)
+- Position encodings (3 types)
+- Layer normalization (2 types)
+- Dropout & regularization
+- Batch normalization
+- Convolutional layers
+- Fully connected layers
+- Various activations
+- Multiple optimizers
+- Different loss functions
+- Training & validation loops
+- Model save/load
+- ASCII plotting
 
 ## Performance
 
@@ -163,7 +176,8 @@ plot_history(history)
 
 - **Learning**: Clean, educational code
 - **Research**: Quick prototyping, experiments
-- **Generative Models**: VAE, CVAE with utilities
+- **Production**: Full training pipelines
+- **Modern ML**: PyTorch-style organization
 
 ## Next Steps
 
@@ -180,16 +194,18 @@ plot_history(history)
 - **Attention Types**: 6 (industry-leading)
 - **Examples**: 13 comprehensive demos
 - **Documentation**: Complete
+- **Import Styles**: 2 (flexible!)
 
 ## Summary
 
 A **complete, unified deep learning API** that includes:
 
-1.   All basic neural network layers
-2.   **6 attention mechanisms** (Flash, RoPE, etc.)
-3.   Complete transformer architectures
-4.   VAE and latent space models
-5.   Full training infrastructure
-6.   Comprehensive examples & docs
+1. All basic neural network layers
+2. **6 attention mechanisms** (Flash, RoPE, etc.)
+3. Complete transformer architectures
+4. VAE and latent space models
+5. Full training infrastructure
+6. Comprehensive examples & docs
+7. **PyTorch-style module organization**
 
 **Happy Deep Learning!**

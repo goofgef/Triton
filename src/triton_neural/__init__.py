@@ -10,6 +10,32 @@ import jax.numpy as jnp
 from jax import random
 from typing import List, Tuple, Optional
 
+# Import submodules for PyTorch-style access
+from . import train
+from . import util
+from . import transformer
+
+# Re-export commonly used items for convenience
+from .train import (
+    SGD, Adam, RMSprop,
+    train_step, eval_step, fit, accuracy,
+    save_params, load_params
+)
+
+from .util import (
+    print_model_summary, plot_history, print_attention_guide,
+    ATTENTION_GUIDE
+)
+
+from .transformer import (
+    SelfAttention, MaskedSelfAttention, CrossAttention,
+    SparseAttention, FlashAttention, RoPEAttention,
+    RotaryPositionalEmbedding,
+    FeedForward, TransformerLayer, TransformerDecoderLayer,
+    PositionalEncoding, LearnedPositionalEmbedding,
+    PremadeTransformer, PremadeTransformerDecoder
+)
+
 
 # ============================================================================
 # BASE MODULE
@@ -611,3 +637,49 @@ def vae_mse_loss(reconstruction, x, mu, logvar, beta=1.0):
     )
     
     return jnp.mean(recon_loss + beta * kl_loss)
+
+
+# ============================================================================
+# PACKAGE METADATA
+# ============================================================================
+
+__version__ = "2.0.2"
+__all__ = [
+    # Modules
+    'Module', 'Sequential',
+    
+    # Core layers
+    'Linear', 'Conv2D', 'BatchNorm', 'Dropout', 'Flatten', 'Reshape',
+    
+    # Activations
+    'ReLU', 'Sigmoid', 'Tanh', 'Softmax', 'GELU', 'LeakyReLU',
+    
+    # Normalization
+    'LayerNorm', 'RMSNorm',
+    
+    # VAE components
+    'VAE', 'ConditionalVAE', 'LatentEncoder', 'LatentDecoder', 'LatentSpace',
+    
+    # Loss functions
+    'mse_loss', 'cross_entropy_loss', 'binary_cross_entropy_loss',
+    'vae_loss', 'vae_mse_loss',
+    
+    # Training components (from train module)
+    'SGD', 'Adam', 'RMSprop',
+    'train_step', 'eval_step', 'fit', 'accuracy',
+    'save_params', 'load_params',
+    
+    # Utilities (from util module)
+    'print_model_summary', 'plot_history', 'print_attention_guide',
+    
+    # Transformer components (from transformer module)
+    'SelfAttention', 'MaskedSelfAttention', 'CrossAttention',
+    'SparseAttention', 'FlashAttention', 'RoPEAttention',
+    'RotaryPositionalEmbedding',
+    'FeedForward', 'TransformerLayer', 'TransformerDecoderLayer',
+    'PositionalEncoding', 'LearnedPositionalEmbedding',
+    'PremadeTransformer', 'PremadeTransformerDecoder',
+    
+    # Submodules for PyTorch-style access
+    'train', 'util', 'transformer'
+]
